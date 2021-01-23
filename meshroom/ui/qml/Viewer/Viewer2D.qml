@@ -701,8 +701,9 @@ FocusScope {
                             checked: false
                             enabled: root.aliceVisionPluginAvailable
                             onCheckedChanged : {
-                                if(displayLensDistortionViewer.checked && checked){
+                                if((displayLensDistortionViewer.checked || displayPanoramaViewer.checked) && checked){
                                     displayLensDistortionViewer.checked = false;
+                                    displayPanoramaViewer.checked = false;
                                 }
                             }
                         }
@@ -720,8 +721,9 @@ FocusScope {
                             checked: false
                             enabled: activeNode && isComputed
                             onCheckedChanged : {
-                                if(displayHDR.checked  && checked){
+                                if((displayHDR.checked || displayPanoramaViewer.checked) && checked){
                                     displayHDR.checked = false;
+                                    displayPanoramaViewer.checked = false;
                                 }
                             }
                         }
@@ -739,9 +741,10 @@ FocusScope {
                             checked: false
                             enabled: activeNode && isComputed
                             onCheckedChanged : {
-//                                if(displayPanoramaViewer.checked  && checked){
-//                                    displayPanoramaViewer.checked = false;
-//                                }
+                                if((displayHDR.checked || displayLensDistortionViewer.checked) && checked){
+                                    displayHDR.checked = false;
+                                    displayLensDistortionViewer.checked = false;
+                                }
                             }
                         }
                         MaterialToolButton {
