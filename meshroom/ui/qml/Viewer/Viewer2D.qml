@@ -250,8 +250,8 @@ FocusScope {
                 // qtAliceVision Panorama Viewer
                 Loader {
                     id: panoramaViewerLoader
-                    active: root.aliceVisionPluginAvailable && root.usePanoramaViewer && !floatImageViewerLoader.active
-                    visible: (panoramaViewerLoader.status === Loader.Ready)
+                    active: root.aliceVisionPluginAvailable && root.usePanoramaViewer && !floatImageViewerLoader.active && _reconstruction.activeNodes.get('sfm').node
+                    visible: (panoramaViewerLoader.status === Loader.Ready) && active
                     anchors.centerIn: parent
 
                     onActiveChanged: {
@@ -267,6 +267,7 @@ FocusScope {
                         } else {
                             // Force the unload (instead of using Component.onCompleted to load it once and for all) is necessary since Qt 5.14
                             setSource("", {})
+                            displayPanoramaViewer.checked = false;
                         }
                     }
                     onLoaded: {
