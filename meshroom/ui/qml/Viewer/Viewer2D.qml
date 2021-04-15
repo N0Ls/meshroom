@@ -183,6 +183,9 @@ FocusScope {
             anchors.margins: 0
             visible: displayImageToolBarAction.checked && displayImageToolBarAction.enabled
             Layout.fillWidth: true
+            onVisibleChanged: {
+                resetDefaultValues();
+            }
             colorRGBA: {
                 if(!floatImageViewerLoader.item ||
                    floatImageViewerLoader.item.status !== Image.Ready)
@@ -264,27 +267,26 @@ FocusScope {
                                 'gamma': Qt.binding(function() { return hdrImageToolbar.gammaValue; }),
                                 'gain': Qt.binding(function() { return hdrImageToolbar.gainValue; }),
                                 'channelModeString': Qt.binding(function() { return hdrImageToolbar.channelModeValue; }),
+                                /*
                                 'isCtrlPointsDisplayed' : Qt.binding(function(){ return lensDistortionImageToolbar.displayPoints;}),
                                 'isGridDisplayed' : Qt.binding(function(){ return lensDistortionImageToolbar.displayGrid;}),
                                 'gridOpacity' : Qt.binding(function(){ return lensDistortionImageToolbar.opacityValue;}),
                                 'gridColor' : Qt.binding(function(){ return lensDistortionImageToolbar.color;}),
                                 'subdivisions' : Qt.binding(function(){ return lensDistortionImageToolbar.subdivisionsValue;}),
                                 'isDistoViewer' : Qt.binding(function(){ return displayLensDistortionViewer.checked;}),
+                                */
                             })
                         } else {
                             // Force the unload (instead of using Component.onCompleted to load it once and for all) is necessary since Qt 5.14
                             setSource("", {})
-                            displayLensDistortionViewer.checked = false;
-                            displayHDR.checked = false;
                         }
                     }
-
                 }
 
                 // qtAliceVision Panorama Viewer
                 Loader {
                     id: panoramaViewerLoader
-                    active: root.aliceVisionPluginAvailable && root.usePanoramaViewer && !floatImageViewerLoader.active && _reconstruction.activeNodes.get('sfm').node
+                    active: root.aliceVisionPluginAvailable && root.usePanoramaViewer && _reconstruction.activeNodes.get('sfm').node
                     visible: (panoramaViewerLoader.status === Loader.Ready) && active
                     anchors.centerIn: parent
 
@@ -706,8 +708,7 @@ FocusScope {
                             Layout.minimumWidth: 0
                             checkable: true
                         }
-                        MaterialToolButton
-                        {
+                        MaterialToolButton {
                             id: displayHDR
                             ToolTip.text: "High-Dynamic-Range Image Viewer"
                             text: MaterialIcons.hdr_on
@@ -717,14 +718,8 @@ FocusScope {
                             padding: 0
                             Layout.minimumWidth: 0
                             checkable: true
-                            checked: false
+                            checked: root.aliceVisionPluginAvailable
                             enabled: root.aliceVisionPluginAvailable
-                            onCheckedChanged : {
-                                if((displayLensDistortionViewer.checked || displayPanoramaViewer.checked) && checked){
-                                    displayLensDistortionViewer.checked = false;
-                                    displayPanoramaViewer.checked = false;
-                                }
-                            }
                         }
                         MaterialToolButton {
                             id: displayLensDistortionViewer
@@ -751,9 +746,8 @@ FocusScope {
                             checkable: true
                             checked: false
                             enabled: activeNode && isComputed
-                            onCheckedChanged : {
-                                if((displayHDR.checked || displayPanoramaViewer.checked) && checked){
-                                    displayHDR.checked = false;
+                            onCheckedChanged: {
+                                if(displayPanoramaViewer.checked && checked){
                                     displayPanoramaViewer.checked = false;
                                 }
                             }
@@ -761,7 +755,7 @@ FocusScope {
                         MaterialToolButton {
                             id: displayPanoramaViewer
                             property var activeNode: root.aliceVisionPluginAvailable ? _reconstruction.activeNodes.get('SfMTransform').node : null
-                            property bool isComputed: activeNode && activeNode.isComputed
+                            property bool isComputed: activeNode
 
                             ToolTip.text: "Panorama Viewer"
                             text: MaterialIcons.panorama_sphere
@@ -784,8 +778,7 @@ FocusScope {
                                 return inputAttrLink.node.isComputed;
                             }
                             onCheckedChanged : {
-                                if((displayHDR.checked || displayLensDistortionViewer.checked) && checked){
-                                    displayHDR.checked = false;
+                                if(displayLensDistortionViewer.checked && checked){
                                     displayLensDistortionViewer.checked = false;
                                 }
                             }

@@ -11,10 +11,9 @@ FloatingPane {
     padding: 5
     radius: 0
 
-    property int opacityDefaultValue: 100
-    property int subdivisionsDefaultValue: 4
+    property int opacityDefaultValue: 70
+    property int subdivisionsDefaultValue: 20
 
-    property real slidersPowerValue: 4
     property int opacityValue: Math.pow(opacityCtrl.value, 1)
     property int subdivisionsValue: subdivisionsCtrl.value
 
@@ -46,7 +45,7 @@ FloatingPane {
             padding: 5
             Layout.minimumWidth: 0
             checkable: true
-            checked: true
+            checked: false
         }
         MaterialToolButton {
             id: displayGridButton
@@ -140,7 +139,7 @@ FloatingPane {
                 id: subdivisionsCtrl
                 Layout.fillWidth: false
                 from: 2
-                to: 10
+                to: 50
                 value: subdivisionsDefaultValue
                 stepSize: 2
             }

@@ -26,18 +26,6 @@ AliceVision.FloatImageViewer {
                 (root.sourceSize.height <= 0))
             return Image.Null;
 
-
-        if(isPanoViewer) { // Pano Viewer
-            root.updateSubdivisions(12)
-        }
-        else if (!isDistoViewer){ // HDR Viewer
-            root.updateSubdivisions(1);
-        }
-
-        root.defaultControlPoints();
-        root.setIdView(idView);
-        updateSfmPath();
-
         return Image.Ready;
     }
 
@@ -57,10 +45,6 @@ AliceVision.FloatImageViewer {
     property int index: 0;
     property var idView: 0;
 
-    property string sfmPath: ""
-
-    property int downscaleLevel: 0
-
     onDownscaleLevelChanged: {
         root.setDownscale(downscaleLevel)
     }
@@ -68,44 +52,41 @@ AliceVision.FloatImageViewer {
     function updateSfmPath() {
         var activeNode = _reconstruction.activeNodes.get('SfMTransform').node;
 
-        if(!activeNode)
-        {
-            root.sfmPath = "";
+        if(!activeNode) {
+            root.surface.sfmPath = "";
         }
-        else
-        {
-            root.sfmPath = activeNode.attribute("input").value;
+        else {
+            root.surface.sfmPath = activeNode.attribute("input").value;
         }
-        root.setSfmPath(sfmPath);
     }
 
     function updatePrincipalPoint() {
-        var pp = root.getPrincipalPoint();
+        var pp = root.surface.getPrincipalPoint();
         ppRect.x = pp.x;
         ppRect.y = pp.y;
     }
 
     function rotatePanoDegrees(yaw, pitch) {
-        root.rotatePanoramaDegrees(yaw, pitch);
+        root.surface.rotatePanoramaDegrees(yaw, pitch);
     }
 
     function rotatePanoRadians(yaw, pitch) {
-        root.rotatePanoramaRadians(yaw, pitch);
+        root.surface.rotatePanoramaRadians(yaw, pitch);
     }
 
     onIsDistoViewerChanged: {
-        root.hasDistortion(isDistoViewer);
-        //Putting states back where they were
+        root.surface.setupLensDistortion(isDistoViewer);
+        // Putting states back where they were
         if(isDistoViewer){
-            root.displayGrid(isGridDisplayed);
+            root.surface.displayGrid = isGridDisplayed;
             repeater.displayControlPoints(isCtrlPointsDisplayed)
-            root.updateSubdivisions(subdivisions)
+            root.surface.updateSubdivisions(subdivisions)
         }
-        //Forcing disabling of parameters
+        // Forcing disabling of parameters
         else{
-            root.displayGrid(isDistoViewer)
+            root.surface.displayGrid = isDistoViewer;
             repeater.displayControlPoints(isDistoViewer)
-            root.updateSubdivisions(1)
+            root.surface.updateSubdivisions(1)
         }
     }
 
@@ -114,12 +95,12 @@ AliceVision.FloatImageViewer {
     }
 
     onIsGridDisplayedChanged: {
-        root.displayGrid(isGridDisplayed);
+        root.surface.displayGrid = isGridDisplayed;
     }
 
     onSubdivisionsChanged: {
         pointsNumber = (subdivisions + 1) * (subdivisions + 1);
-        root.updateSubdivisions(subdivisions)
+        root.surface.updateSubdivisions(subdivisions)
     }
 
     onIsCtrlPointsDisplayedChanged: {
@@ -127,11 +108,11 @@ AliceVision.FloatImageViewer {
     }
 
     onGridOpacityChanged: {
-        root.setGridColorQML(Qt.rgba(gridColor.r, gridColor.g, gridColor.b, gridOpacity/100));
+        root.gridColor = Qt.rgba(gridColor.r, gridColor.g, gridColor.b, gridOpacity/100);
     }
 
     onGridColorChanged: {
-        root.setGridColorQML(Qt.rgba(gridColor.r, gridColor.g, gridColor.b, gridOpacity/100));
+        root.gridColor = Qt.rgba(gridColor.r, gridColor.g, gridColor.b, gridOpacity/100);
     }
 
     channelMode: {
@@ -193,7 +174,7 @@ AliceVision.FloatImageViewer {
         }
 
         Connections {
-            target: root
+            target: root.surface
             onSfmChanged: {
                 if (isDistoViewer)
                     updatePrincipalPoint();
@@ -210,12 +191,12 @@ AliceVision.FloatImageViewer {
         height: root.height
 
         Connections {
-            target: root
+            target: root.surface
             onVerticesChanged : {
-                if (reinit){
+                // if (reinit){ // TODO
                    points.recalculateCP();
                    points.generateControlPoints();
-                }
+                // }
             }
         }
 
@@ -234,8 +215,8 @@ AliceVision.FloatImageViewer {
             var height = repeater.itemAt(0).height;
 
             for (let i = 0; i < repeater.model; i++) {
-                repeater.itemAt(i).x = root.getVertex(i).x - (width / 2);
-                repeater.itemAt(i).y = root.getVertex(i).y - (height / 2);
+                repeater.itemAt(i).x = root.surface.getVertex(i).x - (width / 2);
+                repeater.itemAt(i).y = root.surface.getVertex(i).y - (height / 2);
             }
         }
 
@@ -245,8 +226,8 @@ AliceVision.FloatImageViewer {
                 id: rect
                 width: root.sourceSize.width/100; height: width
                 radius: width/2
-                x: root.getVertex(model.index).x - (width / 2)
-                y: root.getVertex(model.index).y - (height / 2)
+                x: root.surface.getVertex(model.index).x - (width / 2)
+                y: root.surface.getVertex(model.index).y - (height / 2)
                 color: Colors.yellow
                 visible: isDistoViewer && isCtrlPointsDisplayed
                 MouseArea {
