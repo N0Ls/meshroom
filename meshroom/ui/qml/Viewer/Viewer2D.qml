@@ -306,7 +306,8 @@ FocusScope {
                                 'isHighlightable': Qt.binding(function(){ return panoramaViewerToolbar.enableHover;}),
                                 'displayGridPano': Qt.binding(function(){ return panoramaViewerToolbar.displayGrid;}),
                                 'mouseMultiplier': Qt.binding(function(){ return panoramaViewerToolbar.mouseSpeed;}),
-                                'sfmData': Qt.binding(function() { return (msfmDataLoader.status === Loader.Ready && msfmDataLoader.item.status === 2) ? msfmDataLoader.item : null; }),
+                                'sfmData': Qt.binding(function() { return (msfmDataLoader.status === Loader.Ready
+                                                                           && msfmDataLoader.item.status === 2) ? msfmDataLoader.item : null; }),
                             })
                         } else {
                             // Force the unload (instead of using Component.onCompleted to load it once and for all) is necessary since Qt 5.14
@@ -317,8 +318,6 @@ FocusScope {
                     onLoaded: {
                         panoramaViewerLoader.item.updateSfmPath();
                     }
-
-
                 }
 
                 // Simple QML Image Viewer (using Qt or qtOIIO to load images)
